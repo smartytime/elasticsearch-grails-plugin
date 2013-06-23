@@ -36,7 +36,7 @@ class ElasticsearchGrailsPlugin {
     static LOG = Logger.getLogger("org.grails.plugins.elasticsearch.ElasticsearchGrailsPlugin")
 
     // the plugin version
-    def version = "0.20.6.2-SNAPSHOT"
+    def version = "0.20.6.2-martytime-7"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
     // the other plugins this plugin depends on
@@ -123,23 +123,7 @@ class ElasticsearchGrailsPlugin {
             elasticSearchContextHolder = ref("elasticSearchContextHolder")
             grailsApplication = ref("grailsApplication")
         }
-        auditListener(AuditEventListener) {
-            elasticSearchContextHolder = ref("elasticSearchContextHolder")
-        }
 
-        if (!esConfig.disableAutoIndex) {
-            // do not install audit listener if auto-indexing is disabled.
-            hibernateEventListeners(HibernateEventListeners) {
-                listenerMap = [
-                        'post-delete': auditListener,
-                        'post-collection-update': auditListener,
-//                        'save-update': auditListener,
-                        'post-update': auditListener,
-                        'post-insert': auditListener,
-                        'flush': auditListener
-                ]
-            }
-        }
     }
 
     def onShutdown = { event -> }
@@ -149,7 +133,15 @@ class ElasticsearchGrailsPlugin {
         DomainDynamicMethodsUtils.injectDynamicMethods(application.domainClasses, application, ctx)
     }
 
-    def doWithApplicationContext = { applicationContext -> }
+    def doWithApplicationContext = { applicationContext ->
+        application.mainContext.eventTriggeringInterceptor.datastores.each { k, datastore ->
+            AuditEventListener listener = new AuditEventListener(datastore)
+            listener.elasticSearchContextHolder = applicationContext.elasticSearchContextHolder
+            applicationContext.addApplicationListener listener
+        }
+    }
+
+
 
     def onConfigChange = { event -> }
 

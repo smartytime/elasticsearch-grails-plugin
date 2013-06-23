@@ -45,7 +45,8 @@ public class ElasticSearchMappingFactory {
         } catch (ClassNotFoundException e) { }
     }
 
-    public static Map<String, Object> getElasticMapping(SearchableClassMapping scm) {
+    public static Map<String, Object> getElasticMapping(SearchableClassMapping scm, Integer depth) {
+        if(depth == null) depth = 0;
         Map<String, Object> elasticTypeMappingProperties = new LinkedHashMap<String, Object>();
 
         if (!scm.isAll()) {
@@ -93,15 +94,17 @@ public class ElasticSearchMappingFactory {
                     propType = "object";
                 }
 
+                Integer maxDepth = scpm.getMaxDepth();
+
                 if (scpm.getReference() != null) {
                     propType = "object";      // fixme: think about composite ids.
-                } else if (scpm.isComponent()) {
+                } else if (scpm.isComponent() && depth < maxDepth) {
                     // Proceed with nested mapping.
                     // todo limit depth to avoid endless recursion?
                     propType = "object";
                     //noinspection unchecked
                     propOptions.putAll((Map<String, Object>)
-                            (getElasticMapping(scpm.getComponentPropertyMapping()).values().iterator().next()));
+                            (getElasticMapping(scpm.getComponentPropertyMapping(), depth + 1).values().iterator().next()));
 
                 }
 
@@ -114,7 +117,8 @@ public class ElasticSearchMappingFactory {
                         props = new LinkedHashMap<String, Object>();
                         propOptions.put("properties", props);
                     }
-                    props.put("id", defaultDescriptor("long", "not_analyzed", true));
+                    String propertyType = scpm.grailsProperty.getReferencedDomainClass().getPersistentProperty("id").getTypePropertyName();
+                    props.put("id", defaultDescriptor(propertyType, "not_analyzed", true));
                     props.put("class", defaultDescriptor("string", "no", true));
                     props.put("ref", defaultDescriptor("string", "no", true));
                 }

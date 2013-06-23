@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.elasticsearch.client.Client
 import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.groovy.common.xcontent.GXContentBuilder
+import org.elasticsearch.index.query.QueryBuilder
 
 import static org.elasticsearch.client.Requests.searchRequest
 import static org.elasticsearch.search.builder.SearchSourceBuilder.searchSource
@@ -82,6 +83,18 @@ public class ElasticSearchService implements GrailsApplicationAware {
      * @return A Map containing the search results
      */
     def search(String query, Map params = [:]) {
+        SearchRequest request = buildSearchRequest(query, params)
+        return doSearch(request, params)
+    }
+
+    /**
+     * Global search with a text query.
+     *
+     * @param query The search query. Will be parsed by the Lucene Query Parser.
+     * @param params Search parameters
+     * @return A Map containing the search results
+     */
+    def search(QueryBuilder query, Map params = [:]) {
         SearchRequest request = buildSearchRequest(query, params)
         return doSearch(request, params)
     }
@@ -326,6 +339,8 @@ public class ElasticSearchService implements GrailsApplicationAware {
         // Handle the query, can either be a closure or a string
         if (query instanceof Closure) {
             source.query(new GXContentBuilder().buildAsBytes(query))
+        } else if(query instanceof QueryBuilder) {
+            source.query(query)
         } else {
             source.query(queryString(query))
         }
@@ -425,7 +440,7 @@ public class ElasticSearchService implements GrailsApplicationAware {
     private doSearch(SearchRequest request, Map params) {
         elasticSearchHelper.withElasticSearch { Client client ->
             def response = client.search(request).actionGet()
-            def searchHits = response.hits()
+            def searchHits = response.getHits()
             def result = [:]
             result.total = searchHits.totalHits()
 
