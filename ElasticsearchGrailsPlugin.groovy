@@ -37,7 +37,7 @@ class ElasticsearchGrailsPlugin {
 
     // the plugin version
 
-    def version = "0.20.6.2-martytime-10"
+    def version = "0.20.6.2.BUILD-SNAPSHOT"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -106,6 +106,7 @@ class ElasticsearchGrailsPlugin {
             jsonDomainFactory = ref("jsonDomainFactory")
             sessionFactory = ref("sessionFactory")
         }
+
         searchableClassMappingConfigurator(SearchableClassMappingConfigurator) { bean ->
             elasticSearchContext = ref("elasticSearchContextHolder")
             grailsApplication = ref("grailsApplication")
@@ -127,6 +128,11 @@ class ElasticsearchGrailsPlugin {
             grailsApplication = ref("grailsApplication")
         }
 
+        auditEventListener(AuditEventListener) {
+            elasticSearchContextHolder = ref("elasticSearchContextHolder")
+            indexRequestQueue = ref("indexRequestQueue")
+            sessionFactory = ref("sessionFactory")
+        }
     }
 
     def onShutdown = { event -> }
@@ -135,15 +141,6 @@ class ElasticsearchGrailsPlugin {
         // Define the custom ElasticSearch mapping for searchable domain classes
         DomainDynamicMethodsUtils.injectDynamicMethods(application.domainClasses, application, ctx)
     }
-
-    def doWithApplicationContext = { applicationContext ->
-        application.mainContext.eventTriggeringInterceptor.datastores.each { k, datastore ->
-            AuditEventListener listener = new AuditEventListener(datastore)
-            listener.elasticSearchContextHolder = applicationContext.elasticSearchContextHolder
-            applicationContext.addApplicationListener listener
-        }
-    }
-
 
 
     def onConfigChange = { event -> }

@@ -33,18 +33,18 @@ grails.project.dependency.resolution = {
         runtime "org.elasticsearch:elasticsearch:0.90.1"
         runtime "org.elasticsearch:elasticsearch-lang-groovy:1.2.0"
         runtime 'com.spatial4j:spatial4j:0.3'
-		test("org.spockframework:spock-grails-support:0.7-groovy-2.0"){
-            export = false
-        }
+//		test("org.spockframework:spock-grails-support:0.7-groovy-2.0"){
+//            export = false
+//        }
     }
     plugins {
-		runtime ":hibernate:$grailsVersion"
-        build (":release:2.2.1", ":rest-client-builder:1.0.3") {
-            export = false
-        }
-        test(":spock:0.7") {
-            export = false
-            exclude "spock-grails-support"
-        }
+//		runtime ":hibernate:$grailsVersion"
+//        build (":release:2.2.1", ":rest-client-builder:1.0.3") {
+//            export = false
+//        }
+//        test(":spock:0.7") {
+//            export = false
+//            exclude "spock-grails-support"
+//        }
     }
 }

@@ -15,7 +15,9 @@
  */
 package org.grails.plugins.elasticsearch
 
+import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEventListener
@@ -25,9 +27,12 @@ import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.event.FlushEvent
 import org.hibernate.event.PostCollectionUpdateEvent
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationEvent
+import org.springframework.context.ApplicationListener
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
+import org.springframework.stereotype.Component
 import org.springframework.transaction.support.TransactionSynchronization
 import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager
@@ -35,7 +40,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 /**
  * Listen to Hibernate events.
  */
-class AuditEventListener extends AbstractPersistenceEventListener {
+
+class AuditEventListener implements ApplicationListener<AbstractPersistenceEvent> {
 
     /** Logger */
     private static final Logger LOG = Logger.getLogger(AuditEventListener.class)
@@ -43,8 +49,9 @@ class AuditEventListener extends AbstractPersistenceEventListener {
     /** ES context */
     def elasticSearchContextHolder
 
-    /** Spring application context */
-    def applicationContext
+    IndexRequestQueue indexRequestQueue
+
+    SessionFactory sessionFactory
 
     /** List of pending objects to reindex. */
     private static ThreadLocal<Map> pendingObjects = new ThreadLocal<Map>()
@@ -52,13 +59,8 @@ class AuditEventListener extends AbstractPersistenceEventListener {
     /** List of pending object to delete */
     private static ThreadLocal<Map> deletedObjects = new ThreadLocal<Map>()
 
-
-    public AuditEventListener(final Datastore datastore) {
-        super(datastore)
-    }
-
     @Override
-    protected void onPersistenceEvent(final AbstractPersistenceEvent event) {
+    void onApplicationEvent(AbstractPersistenceEvent event) {
         def unwrapped = GrailsHibernateUtil.unwrapIfProxy(event.entityObject)
         String objectName = StringUtils.uncapitalize(unwrapped?.class?.simpleName)
         switch (event.eventType) {
@@ -83,19 +85,6 @@ class AuditEventListener extends AbstractPersistenceEventListener {
                 }
                 break;
         }
-    }
-
-    @Override
-    public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
-        return true
-    }
-
-    /**
-     * Index & Delete requests are execute once per flush.
-     * Before a flush event, the requests are store in callsBuffer and then executed once onFlush() is called.
-     */
-    IndexRequestQueue getIndexRequestQueue() {
-        applicationContext.getBean("indexRequestQueue", IndexRequestQueue)
     }
 
 
@@ -237,7 +226,7 @@ class AuditEventListener extends AbstractPersistenceEventListener {
                     // otherwise http://jira.codehaus.org/browse/GRAILS-4453
                     // (transactions are supposed to be managed
                     // by individual event listeners)
-                    HibernateTemplate template = new HibernateTemplate(applicationContext.getBean('sessionFactory', SessionFactory.class))
+                    HibernateTemplate template = new HibernateTemplate(sessionFactory)
                     def indexRequestQueue = getIndexRequestQueue()
                     template.executeWithNewSession(new HibernateCallback() {
                         Object doInHibernate(Session session) {
