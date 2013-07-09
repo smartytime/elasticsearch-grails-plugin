@@ -52,11 +52,11 @@ class ElasticsearchGrailsPlugin {
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
             "grails-app/views/error.gsp",
-            "grails-app/controllers/test/**",
-            "grails-app/services/test/**",
-            "grails-app/views/elasticSearch/index.gsp",
-            "grails-app/domain/test/**",
-            "grails-app/utils/test/**",
+            "test/projects/test-elasticsearch-grails-plugin/grails-app/controllers/test/**",
+            "test/projects/test-elasticsearch-grails-plugin/grails-app/services/test/**",
+            "test/projects/test-elasticsearch-grails-plugin/grails-app/views/elasticSearch/index.gsp",
+            "test/projects/test-elasticsearch-grails-plugin/grails-app/domain/test/**",
+            "test/projects/test-elasticsearch-grails-plugin/grails-app/utils/test/**",
             "test/**",
             "src/docs/**"
     ]

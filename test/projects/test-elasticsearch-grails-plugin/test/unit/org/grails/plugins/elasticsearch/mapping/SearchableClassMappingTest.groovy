@@ -1,7 +1,7 @@
 package org.grails.plugins.elasticsearch.mapping;
 
 import grails.test.mixin.*
-
+import org.junit.After
 import org.junit.Test
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass

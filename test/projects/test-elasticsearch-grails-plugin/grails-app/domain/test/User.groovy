@@ -10,7 +10,7 @@ class User extends SuperUser {
     someThings index:'no'
     tweets component:true
     photos reference:true
-    role converter:test.RoleConverter
+    role converter:RoleConverter
     indexButDoNotSearchOnThis index:'no', excludeFromAll:true
   }
 

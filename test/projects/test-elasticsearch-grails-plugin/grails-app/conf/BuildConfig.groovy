@@ -4,6 +4,9 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 grails.project.target.level = 1.6
 grails.project.source.level = 1.6
+
+grails.plugin.location."elasticsearch" = "../../../"
+
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
 
 grails.project.dependency.resolution = {
@@ -33,24 +36,23 @@ grails.project.dependency.resolution = {
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
+        runtime "org.hamcrest:hamcrest-core:1.3"
+        runtime "org.elasticsearch:elasticsearch:0.90.1"
+        runtime "org.elasticsearch:elasticsearch-lang-groovy:1.2.0"
+        runtime 'com.spatial4j:spatial4j:0.3'
+        test("org.spockframework:spock-grails-support:0.7-groovy-2.0"){
+//            export = false
+        }
 
-        // runtime 'mysql:mysql-connector-java:5.1.20'
     }
-
     plugins {
         runtime ":hibernate:$grailsVersion"
-        runtime ":jquery:1.8.0"
-        runtime ":resources:1.1.6"
-
-        // Uncomment these (or add new ones) to enable additional resources capabilities
-        //runtime ":zipped-resources:1.0"
-        //runtime ":cached-resources:1.0"
-        //runtime ":yui-minify-resources:0.1.4"
-
-        build ":tomcat:$grailsVersion"
-
-        runtime ":database-migration:1.1"
-
-        compile ':cache:1.0.0'
+        build (":release:2.2.1", ":rest-client-builder:1.0.3") {
+            export = false
+        }
+        test(":spock:0.7") {
+//            export = false
+            exclude "spock-grails-support"
+        }
     }
 }
