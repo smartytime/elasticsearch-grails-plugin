@@ -59,23 +59,27 @@ class AuditEventListener extends AbstractPersistenceEventListener {
 
     @Override
     protected void onPersistenceEvent(final AbstractPersistenceEvent event) {
+        def unwrapped = GrailsHibernateUtil.unwrapIfProxy(event.entityObject)
+        String objectName = StringUtils.uncapitalize(unwrapped?.class?.simpleName)
         switch (event.eventType) {
             case EventType.PostInsert:
                 def object = event.entityObject
                 if (elasticSearchContextHolder.isRootClass(object.class)) {
-                    pushToIndex(event.entity.name, object.id, event.entity)
+                    pushToIndex(objectName, object.id, object)
                 }
                 break
-            case EventType.PostUpdate: println "POST UPDATE ${event.entityObject}"
+            case EventType.PostUpdate:
+
                 def object = event.entityObject
                 if (elasticSearchContextHolder.isRootClass(object.class)) {
-                    pushToIndex(event.entity.name, object.id, event.entity)
+                    pushToIndex(objectName, object.id, object)
                 }
                 break;
-            case EventType.PostDelete: println "POST DELETE ${event.entityObject}"
+            case EventType.PostDelete:
+
                 def object = event.entityObject
                 if (elasticSearchContextHolder.isRootClass(object.class)) {
-                    pushToDelete(event.entity.name, object.id, event.entity)
+                    pushToDelete(objectName, object.id, object)
                 }
                 break;
         }
