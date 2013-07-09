@@ -142,9 +142,9 @@ class JSONDomainFactory {
         marshallingContext.push(instance)
         // Build the json-formated map that will contain the data to index
         scm.propertiesMapping.each { scpm ->
-            marshallingContext.lastParentPropertyName = scpm.propertyName
-            def res = delegateMarshalling(instance."${scpm.propertyName}", marshallingContext)
-            json.field(scpm.propertyName, res)
+            marshallingContext.lastParentPropertyName = scpm.getPropertyName(true)
+            def res = delegateMarshalling(instance."${scpm.getPropertyName(true)}", marshallingContext)
+            json.field(scpm.getPropertyName(true), res)
         }
         marshallingContext.pop()
         json.endObject()

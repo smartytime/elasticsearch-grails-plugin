@@ -26,7 +26,8 @@ import java.util.*;
 public class SearchableClassPropertyMapping {
 
     public static final Set<String> SEARCHABLE_MAPPING_OPTIONS = new HashSet<String>(Arrays.asList("boost", "index", "analyzer"));
-    public static final Set<String> SEARCHABLE_SPECIAL_MAPPING_OPTIONS = new HashSet<String>(Arrays.asList("component","converter","reference","excludeFromAll","maxDepth"));
+    public static final Set<String> SEARCHABLE_SPECIAL_MAPPING_OPTIONS = new HashSet<String>(Arrays.asList("name", "component", "converter", "reference",
+            "excludeFromAll", "prefix", "maxDepth"));
 
     /** Grails attributes of this property */
     GrailsDomainClassProperty grailsProperty;
@@ -90,13 +91,16 @@ public class SearchableClassPropertyMapping {
     public int getMaxDepth() {
         Object maxDepth = specialAttributes.get("maxDepth");
         if (maxDepth != null) {
-            return (Integer)maxDepth;
+            return (Integer) maxDepth;
         } else {
             return 0;
         }
     }
 
-
+    public String getName() {
+        Object name = specialAttributes.get("name");
+        return name != null ? String.valueOf(name) : null;
+    }
 
     public Class getBestGuessReferenceType() {
         // is type defined explicitly?
@@ -158,8 +162,20 @@ public class SearchableClassPropertyMapping {
         return grailsProperty.getType();
     }
 
+    public String getPrefix() {
+        return String.valueOf(specialAttributes.get("prefix"));
+    }
+
     public String getPropertyName() {
-        return grailsProperty.getName();
+        return getPropertyName(false);
+    }
+
+    public String getPropertyName(boolean grailsPropertyName) {
+        if(!grailsPropertyName && getName() != null) {
+            return getName();
+        } else {
+            return grailsProperty.getName();
+        }
     }
 
     public GrailsDomainClassProperty getGrailsProperty() {

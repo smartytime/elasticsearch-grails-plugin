@@ -58,7 +58,10 @@ public class ElasticSearchMappingFactory {
         // Map each domain properties in supported format, or object for complex type
         for(SearchableClassPropertyMapping scpm : scm.getPropertiesMapping()) {
             // Does it have custom mapping?
+
             String propType = scpm.getGrailsProperty().getTypePropertyName();
+
+
             Map<String, Object> propOptions = new LinkedHashMap<String, Object>();
             // Add the custom mapping (searchable static property in domain model)
             propOptions.putAll(scpm.getAttributes());
@@ -137,7 +140,14 @@ public class ElasticSearchMappingFactory {
             if (propType.equals("string") && scpm.isAnalyzed()) {
                 propOptions.put("term_vector", "with_positions_offsets");
             }
-            elasticTypeMappingProperties.put(scpm.getPropertyName(), propOptions);
+            String propertyName = "";
+            if(scpm.getPrefix() != null) {
+                for(int pfx=0; pfx < depth;pfx++) {
+                    propertyName += scpm.getPrefix();
+                }
+            }
+            propertyName += scpm.getPropertyName();
+            elasticTypeMappingProperties.put(propertyName, propOptions);
         }
 
         Map<String, Object> mapping = new LinkedHashMap<String, Object>();
