@@ -90,16 +90,20 @@ class ElasticsearchGrailsPlugin {
 
     def doWithSpring = {
         def esConfig = getConfiguration(application)
+
         elasticSearchContextHolder(ElasticSearchContextHolder) {
             config = esConfig
         }
+
         elasticSearchHelper(ElasticSearchHelper) {
             elasticSearchClient = ref("elasticSearchClient")
         }
+
         elasticSearchClient(ClientNodeFactoryBean) { bean ->
             elasticSearchContextHolder = ref("elasticSearchContextHolder")
             bean.destroyMethod = 'shutdown'
         }
+
         indexRequestQueue(IndexRequestQueue) {
             elasticSearchContextHolder = ref("elasticSearchContextHolder")
             elasticSearchClient = ref("elasticSearchClient")
@@ -115,14 +119,17 @@ class ElasticsearchGrailsPlugin {
 
             bean.initMethod = 'configureAndInstallMappings'
         }
+
         domainInstancesRebuilder(DomainClassUnmarshaller) {
             elasticSearchContextHolder = ref("elasticSearchContextHolder")
             elasticSearchClient = ref("elasticSearchClient")
             grailsApplication = ref("grailsApplication")
         }
+
         customEditorRegistrar(CustomEditorRegistar) {
             grailsApplication = ref("grailsApplication")
         }
+
         jsonDomainFactory(JSONDomainFactory) {
             elasticSearchContextHolder = ref("elasticSearchContextHolder")
             grailsApplication = ref("grailsApplication")
