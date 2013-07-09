@@ -16,6 +16,7 @@
 package org.grails.plugins.elasticsearch.util
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.elasticsearch.index.query.QueryBuilder
 import org.grails.plugins.elasticsearch.ElasticSearchContextHolder
 import org.grails.plugins.elasticsearch.mapping.SearchableDomainClassMapper
 import org.apache.commons.logging.LogFactory
@@ -59,6 +60,12 @@ class DomainDynamicMethodsUtils {
                         params.indices = domainCopy.packageName ?: domainCopy.propertyName
                         params.types = domainCopy.clazz
                         elasticSearchService.search(params, q)
+                    }
+
+                    domain.metaClass.'static'.search << { QueryBuilder q, Map params = [:] ->
+                        params.indices = domainCopy.packageName ?: domainCopy.propertyName
+                        params.types = domainCopy.clazz
+                        elasticSearchService.search(q, params)
                     }
 
                     // Inject the countHits method
