@@ -19,7 +19,6 @@ package org.grails.plugins.elasticsearch.conversion.unmarshall;
 import groovy.lang.GroovyObject;
 import org.apache.log4j.Logger;
 import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -31,6 +30,7 @@ import org.grails.plugins.elasticsearch.mapping.SearchableClassMapping;
 import org.grails.plugins.elasticsearch.mapping.SearchableClassPropertyMapping;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.beans.TypeConverter;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 
 import java.beans.PropertyEditor;
 import java.util.*;
@@ -44,7 +44,6 @@ public class DomainClassUnmarshaller {
 
     private TypeConverter typeConverter = new SimpleTypeConverter();
     private ElasticSearchContextHolder elasticSearchContextHolder;
-    private BindDynamicMethod bind = new BindDynamicMethod();
     private GrailsApplication grailsApplication;
     private Client elasticSearchClient;
 
@@ -76,7 +75,7 @@ public class DomainClassUnmarshaller {
                 unmarshallingContext.resetContext();
             }
             // todo manage read-only transient properties...
-            bind.invoke(instance, "bind", new Object[] { instance, rebuiltProperties });
+            DataBindingUtils.bindObjectToInstance( instance, rebuiltProperties );
 
             results.add(instance);
         }
@@ -266,7 +265,7 @@ public class DomainClassUnmarshaller {
             if (!entry.getKey().equals("class") && !entry.getKey().equals("id")) {
                 unmarshallingContext.getUnmarshallingStack().push(entry.getKey());
                 Object propertyValue = unmarshallProperty(domainClass, entry.getKey(), entry.getValue(), unmarshallingContext);
-                bind.invoke(instance, "bind", new Object[] { instance, Collections.singletonMap(entry.getKey(), propertyValue) });
+                DataBindingUtils.bindObjectToInstance( instance, Collections.singletonMap(entry.getKey(), propertyValue) );
                 unmarshallingContext.getUnmarshallingStack().pop();
             }
         }
